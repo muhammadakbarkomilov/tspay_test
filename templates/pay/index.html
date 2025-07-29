@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TsPay - To'lov bo'limi</title>
+    <link rel="icon" type="image/png" href="{% static 'icons/icon-v2.png' %}" width="40" height="40">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --light-bg: #f8f9fa;
+            --text-color: #212529;
+            --click-color: #3AAE2A;
+            --payme-color: #00B4FF;
+            --uzum-color: #6E0BD4;
+            --success-color: #198754;
+            --pending-color: #ffc107;
+            --failed-color: #dc3545;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+        }
+
+        .payment-container {
+            max-width: 500px;
+            background-color: white;
+            margin: 30px auto;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .brand-name {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .shop-name {
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .payment-content {
+            padding: 20px;
+        }
+
+        .amount-section {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .amount-label {
+            font-size: 14px;
+            color: var(--secondary-color);
+            margin-bottom: 5px;
+        }
+
+        .amount-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .payment-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .status-pending {
+            background-color: var(--pending-color);
+            color: black;
+        }
+
+        .status-failed {
+            background-color: var(--failed-color);
+            color: white;
+        }
+
+        .payment-providers {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .payment-provider {
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .payment-provider:hover {
+            background-color: #f8f9fa;
+        }
+
+        .payment-provider.active {
+            border-color: var(--primary-color);
+            background-color: rgba(13, 110, 253, 0.05);
+            box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.2);
+        }
+
+        .provider-logo {
+            width: 100px;
+            height: 50px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+
+        .provider-name {
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .payment-redirect {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .payment-redirect.active {
+            display: block;
+        }
+
+        .redirect-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .redirect-text {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .redirect-description {
+            font-size: 14px;
+            color: var(--secondary-color);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+        }
+
+        .btn-secondary {
+            background-color: #f8f9fa;
+            color: var(--secondary-color);
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e9ecef;
+        }
+
+        .security-info {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--secondary-color);
+        }
+
+        .support-info {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--secondary-color);
+        }
+
+        .support-link {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .support-link:hover {
+            text-decoration: underline;
+        }
+
+        .shop-icon {
+            height: 40px;
+            width: 40px;
+            border-radius: 10%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <!-- Header -->
+        <div class="payment-header">
+            <div class="brand-name">
+                <img src="{% static 'icons/icon-v2.png' %}" alt="TsPay Logo" style="height: 24px;">
+                <span>TsPay</span>
+            </div>
+            <div class="shop-name">
+                {% if transaction.shop.image %}
+                    <img src="{{ transaction.shop.image.url }}" alt="Shop Icon" class="shop-icon">
+                {% else %}
+                    <i class="fas fa-store" style="font-size: 20px; color: #888;"></i>
+                {% endif %}
+                <span>{{ transaction.shop.title }}</span>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="payment-content">
+            <!-- Amount Section -->
+            <div class="amount-section">
+                <div class="amount-label">To'lov summasi</div>
+                <div class="amount-value">{{ transaction.amount }} UZS</div>
+                <div class="payment-status
+                    {% if transaction.status == 'success' %}status-success
+                    {% elif transaction.status == 'pending' %}status-pending
+                    {% elif transaction.status == 'canceled' %}status-failed
+                    {% endif %}">
+                    {% if transaction.status == 'success' %}To'landi
+                    {% elif transaction.status == 'pending' %}Kutilmoqda
+                    {% elif transaction.status == 'canceled' %}Bekor qilindi
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Payment Providers -->
+            <div class="payment-providers">
+                <div class="payment-provider active" data-provider="click">
+                    <img src="https://api.logobank.uz/media/logos_preview/Click-01_0xvqWH8.png" alt="Click" class="provider-logo">
+                    <div class="provider-name">Click</div>
+                </div>
+                <div class="payment-provider" data-provider="payme">
+                    <img src="https://api.logobank.uz/media/logos_preview/payme-01_dNOt8CM.png" alt="Payme" class="provider-logo">
+                    <div class="provider-name">Payme</div>
+                </div>
+                <div class="payment-provider" data-provider="uzum">
+                    <img src="https://api.logobank.uz/media/logos_preview/UZUM_BANK-01.png" alt="Uzum Bank" class="provider-logo">
+                    <div class="provider-name">Uzum Bank</div>
+                </div>
+            </div>
+
+            <!-- Payment Redirect Message -->
+            <div class="payment-redirect" id="redirect-message">
+                <div class="redirect-icon">
+                    <i class="fas fa-external-link-alt"></i>
+                </div>
+                <div class="redirect-text">To'lovga yo'naltirilmoqdasiz</div>
+                <div class="redirect-description" id="redirect-description">
+                    Click tizimiga yo'naltirilmoqdasiz. Iltimos, kuting...
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group">
+                <button type="button" class="btn btn-primary" id="confirm-button">
+                    <i class="fas fa-check-circle me-2"></i>Tasdiqlash
+                </button>
+                <button type="button" class="btn btn-secondary" id="cancel-button" data-url="{% url 'cancel_transaction' transaction.cheque_id %}">
+                    <i class="fas fa-times-circle me-2"></i>Bekor qilish
+                </button>
+            </div>
+
+            <!-- Security Info -->
+            <div class="security-info">
+                <i class="fas fa-shield-alt me-1 text-success"></i>
+                SSL bilan himoyalangan
+            </div>
+
+            <!-- Support Info -->
+            <div class="support-info">
+                <a href="{% url 'support' %}" class="support-link">
+                    <i class="fas fa-headset me-1"></i>Qo'llab-quvvatlash markazi
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Payment provider selection
+            const providers = document.querySelectorAll('.payment-provider');
+            const redirectMessage = document.getElementById('redirect-message');
+            const redirectDescription = document.getElementById('redirect-description');
+            const confirmButton = document.getElementById('confirm-button');
+            const cancelButton = document.getElementById('cancel-button');
+
+            let selectedProvider = 'click'; // Default selection
+
+            providers.forEach(provider => {
+                provider.addEventListener('click', function() {
+                    // Remove active class from all providers
+                    providers.forEach(p => p.classList.remove('active'));
+
+                    // Add active class to selected provider
+                    this.classList.add('active');
+
+                    // Update selected provider
+                    selectedProvider = this.getAttribute('data-provider');
+
+                    // Update redirect description
+                    updateRedirectDescription();
+                });
+            });
+
+            function updateRedirectDescription() {
+                let providerName, color;
+                switch(selectedProvider) {
+                    case 'click':
+                        providerName = 'Click';
+                        color = 'var(--click-color)';
+                        break;
+                    case 'payme':
+                        providerName = 'Payme';
+                        color = 'var(--payme-color)';
+                        break;
+                    case 'uzum':
+                        providerName = 'Uzum Bank';
+                        color = 'var(--uzum-color)';
+                        break;
+                }
+                redirectDescription.textContent = `${providerName} tizimiga yo'naltirilmoqdasiz. Iltimos, kuting...`;
+                document.querySelector('.redirect-icon i').style.color = color;
+            }
+
+            // Confirm button click handler
+            confirmButton.addEventListener('click', function() {
+                // Show redirect message
+                redirectMessage.classList.add('active');
+
+                // Disable buttons during processing
+                confirmButton.disabled = true;
+                cancelButton.disabled = true;
+
+                // Simulate redirect after 2 seconds
+                setTimeout(() => {
+                    // In a real implementation, you would actually redirect to the payment provider
+                    // window.location.href = getPaymentProviderUrl(selectedProvider);
+
+                    // For demo purposes, we'll just show an alert
+                    let providerName = '';
+                    switch(selectedProvider) {
+                        case 'click': providerName = 'Click'; break;
+                        case 'payme': providerName = 'Payme'; break;
+                        case 'uzum': providerName = 'Uzum Bank'; break;
+                    }
+                    alert(`${providerName} tizimiga muvaffaqiyatli yo'naltirildi!`);
+
+                    // Re-enable buttons
+                    confirmButton.disabled = false;
+                    cancelButton.disabled = false;
+                }, 2000);
+            });
+
+            // Cancel button click handler
+            cancelButton.addEventListener('click', function() {
+                if(confirm('To\'lovni bekor qilmoqchimisiz?')) {
+                    const url = this.dataset.url;
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (response.redirected) {
+                            window.location.href = response.url;
+                        } else if (response.ok) {
+                            return response.json();
+                        } else {
+                            throw new Error('Network response was not ok');
+                        }
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = data.redirect_url || "{% url 'home' %}";
+                        } else {
+                            alert(data.message || "Bekor qilishda xatolik yuz berdi.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Xatolik:", error);
+                        alert("Tarmoq xatosi yoki serverdan javob kelmadi.");
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

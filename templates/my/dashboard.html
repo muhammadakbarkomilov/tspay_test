@@ -1,0 +1,610 @@
+{% extends 'my/base.html' %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+{% block header_title %}Dashboard{% endblock %}
+
+{% block content %}
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <!-- Total Transactions Card -->
+        <div class="bg-white rounded-xl shadow-md p-6 transition-all hover:shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm font-medium">Jami tranzaksiyalar</p>
+                    <h3 class="text-2xl font-bold mt-1 text-gray-800">{{ total_transactions }}</h3>
+                </div>
+                <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
+                    <i class="fas fa-exchange-alt text-lg"></i>
+                </div>
+            </div>
+            <p class="text-green-500 text-sm mt-2 font-medium">
+            </p>
+        </div>
+
+        <!-- Shops Count Card -->
+        <div class="bg-white rounded-xl shadow-md p-6 transition-all hover:shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm font-medium">Jami do'konlar</p>
+                    <h3 class="text-2xl font-bold mt-1 text-gray-800">{{ user.shops.count }}</h3>
+                </div>
+                <div class="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-green-600">
+                    <i class="fas fa-store text-lg"></i>
+                </div>
+            </div>
+            <p class="text-green-500 text-sm mt-2 font-medium">
+            </p>
+        </div>
+
+        <!-- Today's Income Card -->
+        <div class="bg-white rounded-xl shadow-md p-6 transition-all hover:shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm font-medium">Bugungi daromad</p>
+                    <h3 class="text-2xl font-bold mt-1 text-gray-800">{{ today_income|floatformat:0 }} UZS</h3>
+                </div>
+                <div class="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center text-purple-600">
+                    <i class="fas fa-wallet text-lg"></i>
+                </div>
+            </div>
+            <p class="text-green-500 text-sm mt-2 font-medium">
+            </p>
+        </div>
+
+        <!-- Successful Transactions Card -->
+        <div class="bg-white rounded-xl shadow-md p-6 transition-all hover:shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm font-medium">Muvaffaqiyatli tranzaksiyalar</p>
+                    <h3 class="text-2xl font-bold mt-1 text-gray-800">{{ success_transactions }}</h3>
+                </div>
+                <div class="w-12 h-12 bg-yellow-50 rounded-full flex items-center justify-center text-yellow-600">
+                    <i class="fas fa-check-circle text-lg"></i>
+                </div>
+            </div>
+            <p class="text-green-500 text-sm mt-2 font-medium">
+                <i class="fas fa-arrow-up mr-1"></i> 15% o'tgan oydan
+            </p>
+        </div>
+    </div>
+
+    <!-- Charts and Recent Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- Sales Chart -->
+        <div class="bg-white rounded-xl shadow-md p-6 lg:col-span-2 transition-all hover:shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-lg text-gray-800">Tranzaksiyalar statistikasi</h3>
+                <select class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="chart-range">
+                    <option value="7" selected >Oxirgi 7 kun</option>
+                    <option value="30">Oxirgi 30 kun</option>
+                    <option value="90">Oxirgi 90 kun</option>
+                </select>
+            </div>
+            <div id="salesChart" class="w-full h-64"></div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="bg-white rounded-xl shadow-md p-6 transition-all hover:shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-lg text-gray-800">Oxirgi tranzaksiyalar</h3>
+                <a href="{% url 'transactions' %}" class="text-blue-600 text-sm font-medium hover:text-blue-800">
+                    Barchasi <i class="fas fa-chevron-right ml-1 text-xs"></i>
+                </a>
+            </div>
+            <div class="space-y-4">
+    {% for transaction in recent_transactions %}
+    <a href="{% url 'checkout_detail' transaction.cheque_id %}" class="block">
+        <div class="flex items-start p-3 rounded-lg hover:bg-gray-50 transition-colors">
+            <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mr-3">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="font-medium text-gray-800 truncate">{{ transaction.shop.title }}</p>
+                <p class="text-sm text-gray-500 mt-1">{{ transaction.created_at|date:"H:i, d M Y" }}</p>
+            </div>
+            <div class="text-right ml-2">
+                <p class="font-medium text-gray-800">{{ transaction.amount }} UZS</p>
+                <span class="text-xs px-2 py-1 rounded-full status-{{ transaction.status }}
+                    {% if transaction.status == 'success' %}bg-green-100 text-green-800
+                    {% elif transaction.status == 'pending' %}bg-yellow-100 text-yellow-800
+                    {% else %}bg-red-100 text-red-800{% endif %}">
+                    {{ transaction.get_status_display }}
+                </span>
+            </div>
+        </div>
+    </a>
+    {% empty %}
+    <div class="text-center py-4 text-gray-500">
+        <i class="fas fa-exchange-alt text-2xl mb-2 text-gray-300"></i>
+        <p>Hozircha tranzaksiyalar mavjud emas</p>
+    </div>
+    {% endfor %}
+</div>
+        </div>
+    </div>
+
+    <!-- Shops List with Enhanced Features -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden transition-all hover:shadow-lg">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+            <h3 class="font-semibold text-lg text-gray-800">Mening do'konlarim</h3>
+            <a href="{% url 'add_shop' %}" class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors">
+                <i class="fas fa-plus mr-2"></i> Yangi do'kon
+            </a>
+        </div>
+
+        <div class="divide-y divide-gray-100">
+            {% for shop in user.shops.all %}
+            <div class="p-6 hover:bg-gray-50 transition-colors group">
+                <div class="flex items-start">
+                    <!-- Shop Image -->
+                    <div class="w-16 h-16 rounded-lg bg-gray-100 overflow-hidden mr-4 flex-shrink-0 relative">
+                        {% if shop.image %}
+                        <img src="{{ shop.image.url }}" alt="{{ shop.title }}" class="w-full h-full object-cover">
+                        {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-gray-400">
+                            <i class="fas fa-store text-2xl"></i>
+                        </div>
+                        {% endif %}
+                        <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs text-center py-1">
+                            ID: {{ shop.id }}
+                        </div>
+                    </div>
+
+                    <!-- Shop Details -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-medium text-gray-800 truncate">{{ shop.title }}</h4>
+                            <span class="text-xs px-2 py-1 rounded-full
+                                {% if shop.status == 'active' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %} ml-2">
+                                {% if shop.status == 'active' %}Faol{% else %}Nofaol{% endif %}
+                            </span>
+                        </div>
+
+                        <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ shop.description|default:"Tavsif mavjud emas" }}</p>
+
+                        <div class="flex flex-wrap items-center mt-3 gap-2">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded flex items-center">
+                                <i class="fas fa-calendar-alt mr-1"></i> {{ shop.created_at|date:"d M Y" }}
+                            </span>
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded flex items-center">
+                                <i class="fas fa-exchange-alt mr-1"></i> {{ shop.transactions.count }} Transaksiya
+                            </span>
+                            <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded flex items-center">
+                                <i class="fas fa-money-bill-wave mr-1"></i> {{ shop.total_income|default:0|floatformat:0 }} UZS
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
+                        <a href="{% url 'edit_shop' shop.shop_id %}"
+                           class="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors"
+                           data-tooltip="Tahrirlash">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'edit_shop' shop.shop_id %}"
+                           class="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
+                           data-tooltip="Batafsil">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-8 text-center">
+                <div class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 mb-4">
+                    <i class="fas fa-store text-2xl"></i>
+                </div>
+                <h4 class="text-gray-600 font-medium mb-1">Hozircha do'konlaringiz yo'q</h4>
+                <p class="text-gray-500 text-sm mb-4">Yangi do'kon qo'shib, biznesingizni kengaytirishni boshlang</p>
+                <a href="{% url 'add_shop' %}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                    <i class="fas fa-plus mr-2"></i> Do'kon qo'shish
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if user.shops.count > 5 %}
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 text-center">
+            <a href="{% url 'shops' %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                Barcha do'konlarni ko'rish <i class="fas fa-chevron-right ml-1"></i>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const rangeSelect = document.getElementById("chart-range");
+    let chart;
+
+    function fetchChartData(days = 7) {
+        fetch(`/api/chart-data/?days=${days}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === "success") {
+                    renderChart(data.labels, data.data);
+                } else {
+                    console.error("Xatolik:", data.message);
+                    renderFallbackChart(days);
+                }
+            })
+            .catch(error => {
+                console.error("API xatolik:", error);
+                renderFallbackChart(days);
+            });
+    }
+
+    function renderFallbackChart(days) {
+        const labels = Array.from({length: days}, (_, i) => {
+            const date = new Date();
+            date.setDate(date.getDate() - (days - i - 1));
+            return date.toLocaleDateString('en-US', {day: 'numeric', month: 'short'});
+        });
+
+        const data = Array(days).fill(0).map(() => Math.floor(Math.random() * 10));
+
+        renderChart(labels, data);
+    }
+
+    function renderChart(labels, data) {
+        const options = {
+            chart: {
+                type: 'line',
+                height: 300,
+                toolbar: { show: false },
+                animations: { enabled: true }
+            },
+            series: [{
+                name: "Tranzaksiyalar",
+                data: data
+            }],
+            xaxis: {
+                categories: labels,
+                labels: {
+                    rotate: -45,
+                    style: { fontSize: '12px' }
+                },
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 3,
+                colors: ['#3b82f6']
+            },
+            markers: {
+                size: 5,
+                colors: ['#3b82f6'],
+                strokeWidth: 0
+            },
+            dataLabels: { enabled: false },
+            grid: {
+                borderColor: '#eee',
+                strokeDashArray: 4
+            },
+            tooltip: {
+                theme: 'light',
+                y: {
+                    formatter: function(value) {
+                        return value + " ta";
+                    }
+                }
+            },
+            yaxis: {
+                title: {
+                    style: { color: '#555', fontSize: '12px' }
+                },
+                labels: {
+                    formatter: function(value) {
+                        return Math.floor(value);
+                    }
+                }
+            },
+        };
+
+        if (chart) chart.destroy();
+        chart = new ApexCharts(document.querySelector("#salesChart"), options);
+        chart.render();
+    }
+
+    if (rangeSelect) {
+        fetchChartData(rangeSelect.value);
+        rangeSelect.addEventListener("change", function() {
+            fetchChartData(this.value);
+        });
+    }
+});
+    fetch("{% url 'notification-list' %}")
+        .then(res => res.json())
+        .then(data => {
+            // ishlash
+        })
+        .catch(err => {
+            console.error("Error loading notifications:", err);
+        });
+     document.addEventListener('DOMContentLoaded', function() {
+        // Elementlar
+        const notificationBell = document.getElementById('notificationBell');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationList = document.getElementById('notificationList');
+        const unreadCount = document.getElementById('unreadCount');
+        const markAllRead = document.getElementById('markAllRead');
+
+        // WebSocket ulanishi
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const socket = new WebSocket(protocol + window.location.host + '/ws/notifications/');
+
+        // Ovoz obyekti
+        let notificationSound;
+        try {
+            notificationSound = new Audio('{% static "sounds/not.mp3" %}');
+            notificationSound.preload = 'auto';
+        } catch (e) {
+            console.error('Audio init error:', e);
+        }
+
+        // Ovozni chalish funksiyasi
+        function playNotificationSound() {
+            try {
+                if (notificationSound && notificationSound.play) {
+                    notificationSound.currentTime = 0;
+                    notificationSound.play().catch(e => {
+                        console.log('Audio play failed, using fallback:', e);
+                        playFallbackSound();
+                    });
+                } else {
+                    playFallbackSound();
+                }
+            } catch (e) {
+                console.error('Sound play error:', e);
+                playFallbackSound();
+            }
+        }
+
+        // Zaxira ovoz
+        function playFallbackSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioContext();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 800;
+                gainNode.gain.value = 0.3;
+
+                oscillator.start();
+                setTimeout(() => oscillator.stop(), 200);
+            } catch (e) {
+                console.error('Fallback sound error:', e);
+                console.log('\u0007'); // Brauzer beep
+            }
+        }
+
+        // Notification dropdown boshqaruvi
+        notificationBell.addEventListener('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            if (notificationDropdown.classList.contains('hidden')) {
+                loadNotifications();
+            }
+
+            notificationDropdown.classList.toggle('hidden');
+        });
+
+        // Tashqi click
+        document.addEventListener('click', function() {
+            notificationDropdown.classList.add('hidden');
+        });
+
+        // Dropdown ichida click
+        notificationDropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Hammasini o'qilgan deb belgilash
+        markAllRead.addEventListener('click', function(e) {
+            e.preventDefault();
+            markAllNotificationsAsRead();
+        });
+
+        // WebSocket handler
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'notification') {
+                addNewNotification(data);
+                playNotificationSound();
+                updateUnreadCount();
+            }
+        };
+
+        socket.onclose = function(e) {
+            console.error('WebSocket disconnected:', e);
+        };
+
+        // Bildirishnomalarni yuklash
+        function loadNotifications() {
+            fetch('{% url "notification-list" %}')
+                .then(response => response.json())
+                .then(data => {
+                    renderNotifications(data.notifications);
+                    updateUnreadCount();
+                })
+                .catch(error => {
+                    console.error('Error loading notifications:', error);
+                    notificationList.innerHTML = `
+                        <div class="p-4 text-center text-red-500">
+                            Bildirishnomalar yuklanmadi
+                        </div>
+                    `;
+                });
+        }
+
+        // Bildirishnomalarni ko'rsatish
+        function renderNotifications(notifications) {
+            if (!notifications.length) {
+                notificationList.innerHTML = `
+                    <div class="p-4 text-center text-gray-500">
+                        Bildirishnomalar mavjud emas
+                    </div>
+                `;
+                return;
+            }
+
+            notificationList.innerHTML = notifications.map(notification => `
+                <div class="p-3 hover:bg-gray-50 cursor-pointer notification-item ${notification.is_read ? '' : 'unread'}"
+                     data-notification-id="${notification.notification_id}">
+                    <p class="text-sm font-medium">${notification.message}</p>
+                    <p class="text-xs text-gray-500 mt-1">${notification.notification_type}</p>
+                    <p class="text-xs text-gray-400 mt-2">${notification.created_at}</p>
+                </div>
+            `).join('');
+
+            setupNotificationItems();
+        }
+
+        // Notification itemlarini setup qilish
+        function setupNotificationItems() {
+            notificationList.querySelectorAll('.notification-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const notificationId = this.dataset.notificationId;
+                    markNotificationAsRead(notificationId, this);
+                });
+            });
+        }
+
+        // Yangi bildirishnoma qo'shish
+        function addNewNotification(notification) {
+            const notificationElement = document.createElement('div');
+            notificationElement.className = 'p-3 hover:bg-gray-50 cursor-pointer notification-item unread';
+            notificationElement.dataset.notificationId = notification.notification_id;
+            notificationElement.innerHTML = `
+                <p class="text-sm font-medium">${notification.message}</p>
+                <p class="text-xs text-gray-500 mt-1">${notification.notification_type}</p>
+                <p class="text-xs text-gray-400 mt-2">${notification.created_at}</p>
+            `;
+
+            notificationElement.addEventListener('click', function(e) {
+                e.stopPropagation();
+                markNotificationAsRead(notification.notification_id, this);
+            });
+
+            if (notificationList.firstChild) {
+                notificationList.insertBefore(notificationElement, notificationList.firstChild);
+            } else {
+                notificationList.appendChild(notificationElement);
+            }
+
+            updateUnreadCount();
+        }
+
+        // O'qilmaganlar soni
+        function updateUnreadCount() {
+            const count = document.querySelectorAll('.unread').length;
+            unreadCount.textContent = count;
+            count > 0 ? unreadCount.classList.remove('hidden') : unreadCount.classList.add('hidden');
+        }
+
+        // Notificationni o'qilgan deb belgilash
+        function markNotificationAsRead(notificationId, element) {
+            fetch(`{% url "mark-as-read" 0 %}`.replace('0', notificationId), {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success' && element) {
+                    element.classList.remove('unread');
+                    updateUnreadCount();
+                }
+            })
+            .catch(error => console.error('Error marking as read:', error));
+        }
+
+        // Barchasini o'qilgan deb belgilash
+        function markAllNotificationsAsRead() {
+            fetch('{% url "mark-all-read" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.querySelectorAll('.unread').forEach(item => {
+                        item.classList.remove('unread');
+                    });
+                    updateUnreadCount();
+                }
+            })
+            .catch(error => console.error('Error marking all as read:', error));
+        }
+
+        // Hamburger menu
+        document.getElementById('mobileMenuButton').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('hidden');
+        });
+
+        // Dastlabki yuklash
+        updateUnreadCount();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const messages = document.getElementById('djangoMessages');
+        if (messages) {
+            const messageElements = messages.querySelectorAll('div');
+            messageElements.forEach((message) => {
+                setTimeout(() => {
+                    message.classList.add('animate-[fadeOut_0.3s_ease-in]');
+                    setTimeout(() => message.remove(), 300);
+                }, 5000);
+            });
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Brauzer bildirishnomalarni qo'llab-quvvatlaydimi tekshirish
+        if (!("Notification" in window)) {
+            console.log("Bu brauzer bildirishnomalarni qo'llab-quvvatlamaydi");
+        }
+        // Agar oldin ruxsat berilgan bo'lsa
+        else if (Notification.permission === "granted") {
+            showWelcomeNotification();
+        }
+        // Agar ruxsat berilmagan bo'lsa
+        else if (Notification.permission !== "denied") {
+            // Ruxsat so'rash
+            Notification.requestPermission().then(function(permission) {
+                if (permission === "granted") {
+                    showWelcomeNotification();
+                }
+            });
+        }
+    });
+
+    function showWelcomeNotification() {
+        // Yangi xabar yaratish
+        new Notification("TsPayga xush kelibsiz!", {
+            body: "Yangiliklar va xabarlardan xabardor bo'lish uchun bildirishnomalarga ruxsat berdingiz",
+            icon: "{% static 'icons/icon-v2.png' %}" // Logo yo'li
+        });
+    }
+</script>
+{% endblock %}

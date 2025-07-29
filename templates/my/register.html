@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TsPay - Ro'yxatdan o'tish</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .form-input {
+            transition: all 0.3s;
+        }
+        .form-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        .password-toggle {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+<!-- Modal: SMS Verification -->
+<div id="verifyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-6">
+        <h2 class="text-xl font-bold mb-2 text-center">Telefonni tasdiqlash</h2>
+        <p class="text-gray-600 text-sm text-center mb-4">SMS orqali yuborilgan 6 xonali kodni kiriting:</p>
+        <form method="post" id="verifyForm">
+            {% csrf_token %}
+            <input type="text" name="code" maxlength="6" required pattern="\d{6}"
+                class="form-input w-full text-center text-xl tracking-widest pl-4 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500 mb-4"
+                placeholder="______">
+            <button type="submit"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg">Tasdiqlash</button>
+        </form>
+        <button onclick="closeModal()"
+            class="text-sm text-gray-500 hover:text-gray-700 mt-3 block mx-auto">Bekor qilish</button>
+    </div>
+</div>
+
+<!-- Register Card -->
+<div class="w-full max-w-md mx-4">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-blue-600 py-6 px-8 text-center">
+            <div class="flex justify-center mb-4">
+                <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-blue-600 font-bold text-xl">T</div>
+            </div>
+            <h1 class="text-2xl font-bold text-white">TsPay da hisob yarating</h1>
+            <p class="text-blue-100 mt-1">Tez va bepul ro'yxatdan o'ting</p>
+        </div>
+
+        <div class="p-8">
+            <form method="post" id="registerForm" class="space-y-4">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="id_first_name" class="block text-sm font-medium text-gray-700 mb-1">Ism</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </div>
+                            <input type="text" name="first_name" id="id_first_name" required placeholder="Ismingiz"
+                                class="form-input w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="id_last_name" class="block text-sm font-medium text-gray-700 mb-1">Familiya</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </div>
+                            <input type="text" name="last_name" id="id_last_name" required placeholder="Familiyangiz"
+                                class="form-input w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="id_email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-gray-400"></i>
+                        </div>
+                        <input type="email" name="email" id="id_email" required placeholder="email@example.com"
+                            class="form-input w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="id_username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-400"></i>
+                        </div>
+                        <input type="text" name="username" id="id_username" required placeholder="Username"
+                            class="form-input w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="id_phone_number" class="block text-sm font-medium text-gray-700 mb-1">Telefon raqam</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-phone text-gray-400"></i>
+                        </div>
+                        <input type="tel" name="phone_number" id="id_phone_number" required placeholder="+998 99 123 45 67"
+                            class="form-input w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="id_password1" class="block text-sm font-medium text-gray-700 mb-1">Parol</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                        <input type="password" name="password1" id="id_password1" required placeholder="••••••••"
+                            class="form-input w-full pl-10 pr-10 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                        <span class="absolute inset-y-0 right-0 pr-3 flex items-center password-toggle" onclick="togglePassword('id_password1', 'eye1')">
+                            <i id="eye1" class="fas fa-eye-slash text-gray-400"></i>
+                        </span>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Kamida 8 ta belgi. Raqamlar va harflar bo‘lishi kerak.</p>
+                </div>
+
+                <div>
+                    <label for="id_password2" class="block text-sm font-medium text-gray-700 mb-1">Parolni tasdiqlang</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                        <input type="password" name="password2" id="id_password2" required placeholder="••••••••"
+                            class="form-input w-full pl-10 pr-10 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                        <span class="absolute inset-y-0 right-0 pr-3 flex items-center password-toggle" onclick="togglePassword('id_password2', 'eye2')">
+                            <i id="eye2" class="fas fa-eye-slash text-gray-400"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="flex items-start">
+                    <input type="checkbox" name="terms" id="id_terms" required class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="id_terms" class="ml-2 text-sm text-gray-700">
+                        <a href="{% url 'terms' %}" class="text-blue-600 hover:text-blue-800">Foydalanish shartlari</a> va
+                        <a href="{% url 'privacy' %}" class="text-blue-600 hover:text-blue-800">Maxfiylik siyosati</a> bilan tanishdim.
+                    </label>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center mt-6">
+                    <i class="fas fa-user-plus mr-2"></i> Ro'yxatdan o'tish
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <p class="text-gray-600">Allaqachon hisobingiz bormi?
+                    <a href="{% url 'login' %}" class="text-blue-600 font-medium hover:text-blue-800">Kirish</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        } else {
+            input.type = "password";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        }
+    }
+
+    function closeModal() {
+        document.getElementById("verifyModal").classList.add("hidden");
+    }
+
+    document.getElementById("registerForm").addEventListener("submit", function(e){
+        e.preventDefault();
+        const form = e.target;
+        const data = new FormData(form);
+
+        fetch("{% url 'register' %}", {
+            method: "POST",
+            headers: { "X-CSRFToken": "{{ csrf_token }}" },
+            body: data
+        }).then(res => res.json())
+        .then(data => {
+            if (data.status === "ok") {
+                document.getElementById("verifyModal").classList.remove("hidden");
+            } else {
+                alert("Xatolik: " + (data.message || "Ma’lumotlar noto‘g‘ri"));
+            }
+        });
+    });
+
+    document.getElementById("verifyForm").addEventListener("submit", function(e){
+        e.preventDefault();
+        const form = e.target;
+        const data = new FormData(form);
+
+        fetch("{% url 'verify_sms_code' %}", {
+            method: "POST",
+            headers: { "X-CSRFToken": "{{ csrf_token }}" },
+            body: data
+        }).then(res => res.json())
+        .then(data => {
+            if (data.status === "ok") {
+                window.location.href = "{% url 'dashboard' %}";
+            } else {
+                alert(data.message || "Kod noto‘g‘ri");
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

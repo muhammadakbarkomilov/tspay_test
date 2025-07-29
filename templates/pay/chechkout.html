@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To'lov cheki #{{ transaction.cheque_id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7fa;
+        }
+        .receipt {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .watermark {
+            position: absolute;
+            opacity: 0.1;
+            font-size: 120px;
+            font-weight: bold;
+            transform: rotate(-30deg);
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="py-10 px-4">
+    <div class="receipt bg-white rounded-xl shadow-lg overflow-hidden relative">
+        <!-- Watermark based on status -->
+        <div class="watermark
+            {% if transaction.status == 'success' %}text-green-500
+            {% elif transaction.status == 'pending' %}text-yellow-500
+            {% else %}text-red-500{% endif %}"
+            style="top: 30%; left: 10%;">
+            {% if transaction.status == 'success' %}TASDIQLANDI
+            {% elif transaction.status == 'pending' %}KUTILMOQDA
+            {% else %}BEKOR QILINDI{% endif %}
+        </div>
+
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white text-center relative z-10">
+            <h1 class="text-2xl font-bold">TO'LOV CHEKI</h1>
+            <p class="text-sm opacity-90 mt-1">ID: {{ transaction.cheque_id }}</p>
+        </div>
+
+        <!-- Status Indicator -->
+        <div class="px-6 pt-6">
+            <div class="flex items-center justify-center p-4 rounded-lg
+                {% if transaction.status == 'success' %}bg-green-50 text-green-800
+                {% elif transaction.status == 'pending' %}bg-yellow-50 text-yellow-800
+                {% else %}bg-red-50 text-red-800{% endif %}">
+                <div class="mr-3 text-2xl">
+                    {% if transaction.status == 'success' %}
+                        <i class="fas fa-check-circle"></i>
+                    {% elif transaction.status == 'pending' %}
+                        <i class="fas fa-clock"></i>
+                    {% else %}
+                        <i class="fas fa-times-circle"></i>
+                    {% endif %}
+                </div>
+                <div>
+                    <p class="font-bold text-lg">
+                        {% if transaction.status == 'success' %}To'langan
+                        {% elif transaction.status == 'pending' %}Kutilyapti
+                        {% else %}Bekor qilingan{% endif %}
+                    </p>
+                    <p class="text-sm">
+                        {% if transaction.status == 'success' %}
+
+                        {% elif transaction.status == 'pending' %}
+                            To'lov jarayonda
+                        {% else %}
+                            {{ transaction.created_at|date:"d-m-Y, H:i" }} bekor qilindi
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Amount -->
+        <div class="px-6 py-8 text-center border-b border-gray-200">
+            <p class="text-sm text-gray-500">TO'LOV SUMMASI</p>
+            <p class="text-4xl font-bold mt-2">{{ transaction.amount|floatformat:"0" }} <span class="text-xl">so'm</span></p>
+        </div>
+
+        <!-- Details -->
+        <div class="px-6 py-6 space-y-4">
+            <div class="flex justify-between">
+                <span class="text-gray-500">Do'kon:</span>
+                <span class="font-medium">{{ transaction.shop.title }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">Sana:</span>
+                <span class="font-medium">{{ transaction.created_at|date:"d-m-Y, H:i" }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">To'lov turi:</span>
+                <span class="font-medium">{{ transaction.get_payment_type_display }}</span>
+            </div>
+            {% if transaction.description %}
+            <div class="flex justify-between">
+                <span class="text-gray-500">Izoh:</span>
+                <span class="font-medium text-right">{{ transaction.description }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-gray-50 p-6 text-center text-sm text-gray-500">
+            <p>© {% now "Y" %} TsPay. Barcha huquqlar himoyalangan.</p>
+            <p class="mt-1">Chek raqami: {{ transaction.id }}</p>
+        </div>
+    </div>
+
+    <!-- Print Button -->
+    <div class="text-center mt-6">
+        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg inline-flex items-center">
+            <i class="fas fa-print mr-2"></i> Chop etish
+        </button>
+    </div>
+</body>
+</html>

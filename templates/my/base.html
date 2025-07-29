@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TsPay - {% block title %}Boshqaruv Paneli{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'icons/icon-v2.png' %}" width="40" height="40">
+
+    {% block meta %}
+    <meta property="og:title" content="{{ post.title }}">
+    <meta property="og:description" content="{{ post.content|striptags|truncatewords:30 }}">
+    <meta property="og:url" content="https://tspay.uz{{ request.path }}">
+    <meta property="og:type" content="article">
+    {% endblock %}
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        .sidebar {
+            transition: all 0.3s;
+        }
+        .active-menu {
+            background-color: #EFF6FF;
+            color: #2563EB;
+            border-right: 4px solid #2563EB;
+        }
+        .status-pending { background-color: #FEF3C7; color: #92400E; }
+        .status-success { background-color: #D1FAE5; color: #065F46; }
+        .status-failed { background-color: #FEE2E2; color: #B91C1C; }
+        .unread { background-color: #f0f9ff; }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+        }
+
+        /* Dropdown menyu uchun yangi stillar */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #fff;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
+            border-radius: 0.5rem;
+            z-index: 100;
+            margin-top: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: #4b5563;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+            color: #1e40af;
+        }
+
+        .dropdown-divider {
+            border-top: 1px solid #e5e7eb;
+            margin: 0.25rem 0;
+        }
+
+        .dropdown-item i {
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Blocked user styles */
+        .blocked-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: white;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .blocked-content {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .blocked-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #fee2e2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .blocked-icon i {
+            color: #dc2626;
+            font-size: 2.5rem;
+        }
+
+        .blocked-message {
+            background-color: #fef2f2;
+            border-left: 4px solid #dc2626;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="bg-gray-50 font-sans">
+    {% if user.is_authenticated and user.is_blocked %}
+        <!-- Blocked user overlay -->
+        <div class="blocked-overlay">
+            <div class="blocked-content">
+                <div class="blocked-icon">
+                    <i class="fas fa-ban"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-4">Hurmatli foydalanuvchi!
+Sayt qoidalariga zid harakatlar sababli akkauntingiz faoliyati cheklangan.
+Savollar yuzasidan iltimos, admin jamoamiz bilan bog‘laning.</h1>
+
+                <div class="blocked-message">
+                    <p class="text-red-600">{{ user.blocked_msg }}</p>
+                </div>
+
+                <p class="text-gray-600 mb-6">
+                    Agar bu xato deb hisoblasangiz, qo'llab-quvvatlash xizmatiga murojaat qiling.
+                </p>
+
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="{% url 'support' %}" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-headset mr-2"></i>
+                        Qo'llab-quvvatlash
+                    </a>
+                    <a href="{% url 'logout' %}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Chiqish
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prevent any interaction with the rest of the page -->
+        <style>
+            body {
+                overflow: hidden !important;
+            }
+            body > *:not(.blocked-overlay) {
+                display: none !important;
+            }
+        </style>
+
+        <!-- No scripts should run for blocked users -->
+        <script>
+            // Stop all other scripts
+            window.stop();
+        </script>
+    {% else %}
+        <!-- Original content for non-blocked users -->
+        {% if messages %}
+        <div class="fixed top-4 right-4 z-50 space-y-3 w-80" id="djangoMessages">
+            {% for message in messages %}
+            <div class="px-4 py-3 rounded-lg shadow-lg transition-all duration-300 ease-out transform-gpu overflow-hidden
+                        {% if message.tags == 'success' %}
+                            bg-green-50 text-green-800 border-l-4 border-green-500
+                        {% elif message.tags == 'error' %}
+                            bg-red-50 text-red-800 border-l-4 border-red-500
+                        {% elif message.tags == 'warning' %}
+                            bg-yellow-50 text-yellow-800 border-l-4 border-yellow-500
+                        {% else %}
+                            bg-blue-50 text-blue-800 border-l-4 border-blue-500
+                        {% endif %}
+                        animate-[slideIn_0.3s_ease-out] hover:scale-[1.02] hover:shadow-md cursor-pointer"
+                 onclick="this.classList.add('animate-[fadeOut_0.3s_ease-in]'); setTimeout(() => this.remove(), 300)">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 pt-0.5">
+                        {% if message.tags == 'success' %}
+                            <svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" stroke-width="2"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M5 13l4 4L19 7"/>
+                            </svg>
+                        {% elif message.tags == 'error' %}
+                            <svg class="h-6 w-6 text-red-500" fill="none" stroke="currentColor" stroke-width="2"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        {% elif message.tags == 'warning' %}
+                            <svg class="h-6 w-6 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M12 9v2m0 4h.01M4.93 4.93l14.14 14.14"/>
+                            </svg>
+                        {% else %}
+                            <svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" stroke-width="2"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"/>
+                            </svg>
+                        {% endif %}
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm font-medium break-words">{{ message }}</p>
+                    </div>
+                    <button class="ml-4 -mt-1 -mr-2 p-1 rounded-full hover:bg-opacity-20 hover:bg-current focus:outline-none"
+                            onclick="this.closest('div').remove()">
+                        <svg class="h-5 w-5 text-gray-500 hover:text-gray-700" fill="currentColor"
+                             viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414
+                                  1.414L11.414 10l4.293 4.293a1 1 0 01-1.414
+                                  1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586
+                                  10 4.293 5.707a1 1 0 010-1.414z"
+                                  clip-rule="evenodd"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="flex h-screen overflow-hidden">
+            <!-- Sidebar -->
+            <div class="sidebar w-64 bg-white shadow-md hidden md:block">
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">T</div>
+                        <span class="text-xl font-bold text-gray-800">TsPay</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Boshqaruv paneli</p>
+                </div>
+
+                <nav class="mt-6">
+                    <div>
+                        <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">ASOSIY</p>
+                        <!-- Dashboard -->
+                        <a href="{% url 'dashboard' %}"
+                           class="flex items-center px-4 py-3 mt-2 text-gray-600 hover:bg-blue-50 {% if request.resolver_match.url_name == 'dashboard' %}active-menu{% endif %}">
+                            <i class="fas fa-tachometer-alt mr-3"></i>
+                            Dashboard
+                        </a>
+
+                        <!-- Do'konlarim -->
+                        <a href="{% url 'shops' %}"
+                           class="flex items-center px-4 py-3 mt-1 text-gray-600 hover:bg-blue-50 {% if request.resolver_match.url_name == 'shops' %}active-menu{% endif %}">
+                            <i class="fas fa-store mr-3"></i>
+                            Do'konlarim
+                        </a>
+
+                        <!-- Tranzaksiyalar -->
+                        <a href="{% url 'transactions' %}"
+                           class="flex items-center px-4 py-3 mt-1 text-gray-600 hover:bg-blue-50 {% if request.resolver_match.url_name == 'transactions' %}active-menu{% endif %}">
+                            <i class="fas fa-exchange-alt mr-3"></i>
+                            Tranzaksiyalar
+                        </a>
+
+                        <a href="{% url 'blog_list' %}"
+                           class="flex items-center px-4 py-3 mt-1 text-gray-600 hover:bg-blue-50 {% if request.resolver_match.url_name == 'blog_list' %}active-menu{% endif %}">
+                            <i class="fas fa-blog mr-3"></i>
+                            Blog
+                        </a>
+                    </div>
+
+                    <div class="mt-6">
+                        <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Dokumentatsiya</p>
+                        <a href="{% url 'schema-redoc' %}" class="flex items-center px-4 py-3 mt-2 text-gray-600 hover:bg-blue-50">
+                            <i class="fas fa-cogs mr-3"></i>
+                            Docs
+                        </a>
+                    </div>
+
+                    <div class="mt-6">
+                        <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Qollab-quvvatlash</p>
+                        <a href="{% url 'support' %}" class="flex items-center px-4 py-3 mt-1 text-gray-600 hover:bg-blue-50">
+                            <i class="fas fa-headset mr-3"></i>
+                            Qollab-quvvatlash markazi
+                        </a>
+                    </div>
+
+                    <div class="mt-6">
+                        <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">HISOB</p>
+                        <a href="{% url 'profile' %}"
+                           class="flex items-center px-4 py-3 mt-1 text-gray-600 hover:bg-blue-50 {% if request.resolver_match.url_name == 'profile' %}active-menu{% endif %}">
+                            <i class="fas fa-user mr-3"></i>
+                            Profile
+                        </a>
+                        <a href="{% url 'logout' %}" class="flex items-center px-4 py-3 mt-1 text-gray-600 hover:bg-blue-50">
+                            <i class="fas fa-sign-out-alt mr-3"></i>
+                            Chiqish
+                        </a>
+                    </div>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="flex-1 overflow-auto">
+                <!-- Header -->
+                <header class="bg-white shadow-sm">
+                    <div class="flex items-center justify-between px-6 py-4">
+                        <div class="flex items-center">
+                            <button id="mobileMenuButton" class="md:hidden text-gray-500 mr-4">
+                                <i class="fas fa-bars text-xl"></i>
+                            </button>
+                            <h1 class="text-xl font-semibold text-gray-800">{% block header_title %}{% endblock %}</h1>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <!-- Notification Button -->
+                            <div class="relative">
+                                <button id="notificationBell" class="text-gray-500 hover:text-gray-700 relative">
+                                    <i class="fas fa-bell text-xl"></i>
+                                    <span id="unreadCount"
+                                          class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                                </button>
+
+                                <!-- Notification Dropdown -->
+                                <div id="notificationDropdown"
+                                     class="hidden absolute right-0 mt-2 w-72 bg-white rounded-md shadow-lg z-50 border border-gray-200 max-h-96 overflow-y-auto">
+                                    <div class="p-3 border-b flex justify-between items-center bg-gray-50">
+                                        <h3 class="font-bold text-gray-700">Bildirishnomalar</h3>
+                                        <button id="markAllRead" class="text-blue-600 text-sm hover:text-blue-800">Hammasini o'qilgan deb belgilash</button>
+                                    </div>
+                                    <div id="notificationList" class="divide-y divide-gray-100">
+                                        <div class="p-4 text-center text-gray-500">Yuklanmoqda...</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Yangi Profile Dropdown Section -->
+                            <div class="dropdown">
+                                <button class="flex items-center focus:outline-none">
+                                    {% if user.profile.profile_picture %}
+                                    <img src="{{ user.profile.profile_picture.url }}" alt="Profile" class="w-8 h-8 rounded-full object-cover">
+                                    {% else %}
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                                        {{ user.first_name|first|upper }}
+                                    </div>
+                                    {% endif %}
+                                    <span class="ml-2 text-sm font-medium text-gray-700 hidden md:inline">{{ user.first_name }}</span>
+                                    <i class="fas fa-chevron-down ml-1 text-xs text-gray-500 hidden md:inline"></i>
+                                </button>
+
+                                <div class="dropdown-content">
+                                    <a href="{% url 'profile' %}" class="dropdown-item">
+                                        <i class="fas fa-user-circle"></i>
+                                        Profilim
+                                    </a>
+                                    <a href="{% url 'profile' %}#settings" class="dropdown-item">
+                                        <i class="fas fa-cog"></i>
+                                        Sozlamalar
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a href="{% url 'logout' %}" class="dropdown-item">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        Chiqish
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Main Content -->
+                <main class="p-6">
+                    {% block content %}{% endblock %}
+                </main>
+            </div>
+        </div>
+
+        {% block scripts %}
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementlar
+            const notificationBell = document.getElementById('notificationBell');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            const notificationList = document.getElementById('notificationList');
+            const unreadCount = document.getElementById('unreadCount');
+            const markAllRead = document.getElementById('markAllRead');
+
+            // WebSocket ulanishi
+            const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+            const socket = new WebSocket(protocol + window.location.host + '/ws/notifications/');
+
+            // Ovoz obyekti
+            let notificationSound;
+            try {
+                notificationSound = new Audio('{% static "sounds/not.mp3" %}');
+                notificationSound.preload = 'auto';
+            } catch (e) {
+                console.error('Audio init error:', e);
+            }
+
+            // Ovozni chalish funksiyasi
+            function playNotificationSound() {
+                try {
+                    if (notificationSound && notificationSound.play) {
+                        notificationSound.currentTime = 0;
+                        notificationSound.play().catch(e => {
+                            console.log('Audio play failed, using fallback:', e);
+                            playFallbackSound();
+                        });
+                    } else {
+                        playFallbackSound();
+                    }
+                } catch (e) {
+                    console.error('Sound play error:', e);
+                    playFallbackSound();
+                }
+            }
+
+            // Zaxira ovoz
+            function playFallbackSound() {
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    const ctx = new AudioContext();
+                    const oscillator = ctx.createOscillator();
+                    const gainNode = ctx.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(ctx.destination);
+
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = 800;
+                    gainNode.gain.value = 0.3;
+
+                    oscillator.start();
+                    setTimeout(() => oscillator.stop(), 200);
+                } catch (e) {
+                    console.error('Fallback sound error:', e);
+                    console.log('\u0007'); // Brauzer beep
+                }
+            }
+
+            // Notification dropdown boshqaruvi
+            notificationBell.addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                if (notificationDropdown.classList.contains('hidden')) {
+                    loadNotifications();
+                }
+
+                notificationDropdown.classList.toggle('hidden');
+            });
+
+            // Tashqi click
+            document.addEventListener('click', function() {
+                notificationDropdown.classList.add('hidden');
+            });
+
+            // Dropdown ichida click
+            notificationDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            // Hammasini o'qilgan deb belgilash
+            markAllRead.addEventListener('click', function(e) {
+                e.preventDefault();
+                markAllNotificationsAsRead();
+            });
+
+            // WebSocket handler
+            socket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                if (data.type === 'notification') {
+                    addNewNotification(data);
+                    playNotificationSound();
+                    updateUnreadCount();
+                }
+            };
+
+            socket.onclose = function(e) {
+                console.error('WebSocket disconnected:', e);
+            };
+
+            // Bildirishnomalarni yuklash
+            function loadNotifications() {
+                fetch('{% url "notification-list" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        renderNotifications(data.notifications);
+                        updateUnreadCount();
+                    })
+                    .catch(error => {
+                        console.error('Error loading notifications:', error);
+                        notificationList.innerHTML = `
+                            <div class="p-4 text-center text-red-500">
+                                Bildirishnomalar yuklanmadi
+                            </div>
+                        `;
+                    });
+            }
+
+            // Bildirishnomalarni ko'rsatish
+            function renderNotifications(notifications) {
+                if (!notifications.length) {
+                    notificationList.innerHTML = `
+                        <div class="p-4 text-center text-gray-500">
+                            Bildirishnomalar mavjud emas
+                        </div>
+                    `;
+                    return;
+                }
+
+                notificationList.innerHTML = notifications.map(notification => `
+                    <div class="p-3 hover:bg-gray-50 cursor-pointer notification-item ${notification.is_read ? '' : 'unread'}"
+                         data-notification-id="${notification.notification_id}">
+                        <p class="text-sm font-medium">${notification.message}</p>
+                        <p class="text-xs text-gray-500 mt-1">${notification.notification_type}</p>
+                        <p class="text-xs text-gray-400 mt-2">${notification.created_at}</p>
+                    </div>
+                `).join('');
+
+                setupNotificationItems();
+            }
+
+            // Notification itemlarini setup qilish
+            function setupNotificationItems() {
+                notificationList.querySelectorAll('.notification-item').forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const notificationId = this.dataset.notificationId;
+                        markNotificationAsRead(notificationId, this);
+                    });
+                });
+            }
+
+            // Yangi bildirishnoma qo'shish
+            function addNewNotification(notification) {
+                const notificationElement = document.createElement('div');
+                notificationElement.className = 'p-3 hover:bg-gray-50 cursor-pointer notification-item unread';
+                notificationElement.dataset.notificationId = notification.notification_id;
+                notificationElement.innerHTML = `
+                    <p class="text-sm font-medium">${notification.message}</p>
+                    <p class="text-xs text-gray-500 mt-1">${notification.notification_type}</p>
+                    <p class="text-xs text-gray-400 mt-2">${notification.created_at}</p>
+                `;
+
+                notificationElement.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    markNotificationAsRead(notification.notification_id, this);
+                });
+
+                if (notificationList.firstChild) {
+                    notificationList.insertBefore(notificationElement, notificationList.firstChild);
+                } else {
+                    notificationList.appendChild(notificationElement);
+                }
+
+                updateUnreadCount();
+            }
+
+            // O'qilmaganlar soni
+            function updateUnreadCount() {
+                const count = document.querySelectorAll('.unread').length;
+                unreadCount.textContent = count;
+                count > 0 ? unreadCount.classList.remove('hidden') : unreadCount.classList.add('hidden');
+            }
+
+            // Notificationni o'qilgan deb belgilash
+            function markNotificationAsRead(notificationId, element) {
+                fetch(`{% url "mark-as-read" 0 %}`.replace('0', notificationId), {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && element) {
+                        element.classList.remove('unread');
+                        updateUnreadCount();
+                    }
+                })
+                .catch(error => console.error('Error marking as read:', error));
+            }
+
+            // Barchasini o'qilgan deb belgilash
+            function markAllNotificationsAsRead() {
+                fetch('{% url "mark-all-read" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        document.querySelectorAll('.unread').forEach(item => {
+                            item.classList.remove('unread');
+                        });
+                        updateUnreadCount();
+                    }
+                })
+                .catch(error => console.error('Error marking all as read:', error));
+            }
+
+            // Hamburger menu
+            document.getElementById('mobileMenuButton').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.toggle('hidden');
+            });
+
+            // Dastlabki yuklash
+            updateUnreadCount();
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const messages = document.getElementById('djangoMessages');
+            if (messages) {
+                const messageElements = messages.querySelectorAll('div');
+                messageElements.forEach((message) => {
+                    setTimeout(() => {
+                        message.classList.add('animate-[fadeOut_0.3s_ease-in]');
+                        setTimeout(() => message.remove(), 300);
+                    }, 5000);
+                });
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Brauzer bildirishnomalarni qo'llab-quvvatlaydimi tekshirish
+            if (!("Notification" in window)) {
+                console.log("Bu brauzer bildirishnomalarni qo'llab-quvvatlamaydi");
+            }
+            // Agar oldin ruxsat berilgan bo'lsa
+            else if (Notification.permission === "granted") {
+                showWelcomeNotification();
+            }
+            // Agar ruxsat berilmagan bo'lsa
+            else if (Notification.permission !== "denied") {
+                // Ruxsat so'rash
+                Notification.requestPermission().then(function(permission) {
+                    if (permission === "granted") {
+                        showWelcomeNotification();
+                    }
+                });
+            }
+        });
+
+        function showWelcomeNotification() {
+            // Yangi xabar yaratish
+            new Notification("TsPayga xush kelibsiz!", {
+                body: "Yangiliklar va xabardor bo'lish uchun bildirishnomalarga ruxsat berdingiz",
+                icon: "{% static 'icons/icon-v2.png' %}" // Logo yo'li
+            });
+        }
+        </script>
+        {% endblock %}
+    {% endif %}
+</body>
+</html>

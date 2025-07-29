@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TsPay - Kirish</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .form-input {
+            transition: all 0.3s;
+        }
+        .form-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-md mx-4">
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="bg-blue-600 py-6 px-8 text-center">
+                <div class="flex justify-center mb-4">
+                    <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-blue-600 font-bold text-xl">T</div>
+                </div>
+                <h1 class="text-2xl font-bold text-white">TsPay ga kirish</h1>
+                <p class="text-blue-100 mt-1">Hisobingizga kirish uchun ma'lumotlaringizni kiriting</p>
+            </div>
+
+            <!-- Form -->
+            <div class="p-8">
+                {% if form.errors %}
+                <div class="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    Elektron pochta yoki parol noto'g'ri. Iltimos, qayta urinib ko'ring.
+                </div>
+                {% endif %}
+
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+
+                    <div>
+                        <label for="id_username" class="block text-sm font-medium text-gray-700 mb-1">Elektron pochta</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+                            <input
+                                type="email"
+                                name="username"
+                                id="id_username"
+                                required
+                                class="form-input w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                                placeholder="email@example.com">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="id_password" class="block text-sm font-medium text-gray-700 mb-1">Parol</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input
+                                type="password"
+                                name="password"
+                                id="id_password"
+                                required
+                                class="form-input w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                                placeholder="••••••••">
+                        </div>
+                        <div class="flex justify-end mt-2">
+                            <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Parolni unutdingizmi?</a>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input
+                            type="checkbox"
+                            name="remember"
+                            id="id_remember"
+                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="id_remember" class="ml-2 block text-sm text-gray-700">Eslab qolish</label>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-sign-in-alt mr-2"></i> Kirish
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-gray-600">Hisobingiz yo'qmi?
+                        <a href="{% url 'register' %}" class="text-blue-600 font-medium hover:text-blue-800">Ro'yxatdan o'tish</a>
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

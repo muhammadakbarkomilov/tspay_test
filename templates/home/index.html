@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="uz" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TsPay - Zamonaviy va xavfsiz to'lov tizimi. 24/7 qo'llab-quvvatlash.">
+    <title>TsPay - Zamonaviy To'lov Tizimi</title>
+    <link rel="icon" type="image/png" href="{% static 'icons/icon-v2.png' %}">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            500: '#3B82F6',
+                            600: '#2563EB',
+                            700: '#1D4ED8'
+                        },
+                        dark: {
+                            900: '#111827'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style type="text/tailwindcss">
+        @layer components {
+            .btn-primary {
+                @apply bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transition-all duration-300 hover:from-primary-600 hover:to-primary-700 hover:shadow-xl;
+            }
+            .btn-secondary {
+                @apply bg-gradient-to-r from-gray-100 to-gray-50 text-gray-800 px-6 py-3 rounded-xl font-semibold shadow transition-all duration-300 border border-gray-200 hover:border-gray-300 hover:shadow-md;
+            }
+            .card {
+                @apply bg-white rounded-2xl shadow-md transition-all duration-300 p-6 hover:shadow-lg hover:-translate-y-1;
+            }
+            .nav-link {
+                @apply relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary-500 after:transition-all after:duration-300 hover:after:w-full;
+            }
+            .stat-card {
+                @apply bg-white p-6 rounded-xl shadow-md border-l-4 border-primary-500;
+            }
+            .mobile-menu {
+                @apply fixed inset-0 bg-white z-50 flex flex-col items-center justify-center space-y-8 transition-all duration-300 ease-in-out;
+            }
+            .testimonial-card {
+                @apply bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased text-gray-800">
+    <!-- Navbar -->
+    <nav class="fixed w-full bg-white/90 backdrop-blur-md z-50 shadow-sm">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">T</div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">TsPay</span>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="nav-link text-gray-700 font-medium">Bosh sahifa</a>
+                    <a href="#features" class="nav-link text-gray-700 font-medium">Xizmatlar</a>
+                    <a href="#stats" class="nav-link text-gray-700 font-medium">Statistika</a>
+                    <a href="#testimonials" class="nav-link text-gray-700 font-medium">Mijozlar fikri</a>
+                    <a href="#how-it-works" class="nav-link text-gray-700 font-medium">Qanday ishlaydi?</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'login' %}" class="hidden md:block text-gray-600 hover:text-primary-600 transition-colors font-medium">Kirish</a>
+                    <a href="{% url 'register' %}" class="btn-primary">Ro'yxatdan o'tish</a>
+                    <button id="mobileMenuButton" class="md:hidden text-gray-600">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu hidden opacity-0 translate-y-full">
+        <button id="closeMobileMenu" class="absolute top-6 right-6 text-gray-600">
+            <i class="fas fa-times text-2xl"></i>
+        </button>
+        <a href="#home" class="text-2xl font-medium">Bosh sahifa</a>
+        <a href="#features" class="text-2xl font-medium">Xizmatlar</a>
+        <a href="#stats" class="text-2xl font-medium">Statistika</a>
+        <a href="#testimonials" class="text-2xl font-medium">Mijozlar fikri</a>
+        <a href="#how-it-works" class="text-2xl font-medium">Qanday ishlaydi?</a>
+        <div class="pt-8 flex space-x-4">
+            <a href="{% url 'login' %}" class="btn-secondary">Kirish</a>
+            <a href="{% url 'register' %}" class="btn-primary">Ro'yxatdan o'tish</a>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="home" class="pt-32 pb-20 px-4">
+        <div class="container mx-auto">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-12 md:mb-0">
+                    <h1 class="text-4xl sm:text-5xl font-bold text-gray-800 leading-tight mb-6">
+                        To'lovlaringizni <span class="text-primary-600">oson</span> va <span class="text-primary-600">xavfsiz</span> qiling
+                    </h1>
+                    <p class="text-lg sm:text-xl text-gray-600 mb-8">
+                        TsPay - zamonaviy to'lov tizimi. To'lovlaringizni bir necha soniyada amalga oshiring.
+                    </p>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                        <a href="{% url 'register' %}" class="btn-primary">Boshlash</a>
+                        <a href="#how-it-works" class="btn-secondary">
+                            <i class="fas fa-play-circle mr-2"></i> Qo'llanma
+                        </a>
+                    </div>
+
+                    <div class="mt-12 flex items-center space-x-6">
+                        <div class="flex -space-x-2">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" class="w-10 h-10 rounded-full border-2 border-white" alt="User">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" class="w-10 h-10 rounded-full border-2 border-white" alt="User">
+                            <img src="https://randomuser.me/api/portraits/women/68.jpg" class="w-10 h-10 rounded-full border-2 border-white" alt="User">
+                        </div>
+                        <div>
+                            <p class="text-gray-600"><span class="font-bold text-gray-800">10,000+</span> foydalanuvchi</p>
+                            <div class="flex items-center">
+                                <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                <span class="text-gray-800 font-medium">4.9 (1,200 sharhlar)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:w-1/2">
+                    <div class="relative bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 transform transition-transform duration-500 hover:scale-[1.02]">
+                        <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
+                             alt="TsPay Dashboard"
+                             class="w-full h-auto object-cover">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-4">Nega aynan <span class="text-primary-600">TsPay</span>?</h2>
+                <p class="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">Bizning platformamiz sizga eng yaxshi to'lov tajribasini taqdim etadi</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="card group">
+                    <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-6 transition-all group-hover:bg-blue-600 group-hover:text-white">
+                        <i class="fas fa-shield-alt text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Bank darajasidagi xavfsizlik</h3>
+                    <p class="text-gray-600">256-bitli shifrlash va ikki faktorli autentifikatsiya bilan himoyalangan tizim.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="card group">
+                    <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-6 transition-all group-hover:bg-purple-600 group-hover:text-white">
+                        <i class="fas fa-bolt text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Tezkor to'lovlar</h3>
+                    <p class="text-gray-600">Bir necha soniyada to'lovlarni amalga oshiring. To'lovlar darhol qabul qilinadi.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="card group">
+                    <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-6 transition-all group-hover:bg-green-600 group-hover:text-white">
+                        <i class="fas fa-headset text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">24/7 qo'llab-quvvatlash</h3>
+                    <p class="text-gray-600">Har qanday savolingizga 24 soat davomida javob olishingiz mumkin.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="card group">
+                    <div class="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 mb-6 transition-all group-hover:bg-orange-600 group-hover:text-white">
+                        <i class="fas fa-chart-line text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Real vaqtda monitoring</h3>
+                    <p class="text-gray-600">Barcha tranzaksiyalaringizni real vaqt rejimida kuzatishingiz mumkin.</p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="card group">
+                    <div class="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center text-red-600 mb-6 transition-all group-hover:bg-red-600 group-hover:text-white">
+                        <i class="fas fa-file-invoice-dollar text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Avtomatik hisob-faktura</h3>
+                    <p class="text-gray-600">Barcha tranzaksiyalaringiz uchun avtomatik hisob-fakturalar yaratiladi.</p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="card group">
+                    <div class="w-14 h-14 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 mb-6 transition-all group-hover:bg-indigo-600 group-hover:text-white">
+                        <i class="fas fa-mobile-alt text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Mobil ilova</h3>
+                    <p class="text-gray-600">Har qanday qurilmadan to'lovlaringizni amalga oshiring.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section id="stats" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Platforma statistikasi</h2>
+                <p class="text-xl text-gray-600">Bizning platformamizdagi faol tranzaksiyalar</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                <!-- Active Shops -->
+                <div class="stat-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500">Faol Do'konlar</p>
+                            <h3 class="text-3xl font-bold">{% if stats.active_shops %}{{ stats.active_shops }}{% else %}0{% endif %}</h3>
+                        </div>
+                        <div class="text-green-500 bg-green-100 p-2 rounded-full">
+                            <i class="fas fa-store text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Users -->
+                <div class="stat-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500">Faol Mijozlar</p>
+                            <h3 class="text-3xl font-bold">{% if stats.active_users %}{{ stats.active_users }}{% else %}0{% endif %}</h3>
+                        </div>
+                        <div class="text-blue-500 bg-blue-100 p-2 rounded-full">
+                            <i class="fas fa-users text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Transactions -->
+                <div class="stat-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500">Jami Tranzaksiyalar</p>
+                            <h3 class="text-3xl font-bold">{% if stats.total_transactions %}{{ stats.total_transactions }}{% else %}0{% endif %}</h3>
+                        </div>
+                        <div class="text-purple-500 bg-purple-100 p-2 rounded-full">
+                            <i class="fas fa-exchange-alt text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Success Rate -->
+                <div class="stat-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500">Muvaffaqiyatli Operatsiyalar</p>
+                            <h3 class="text-3xl font-bold">{% if stats.success_rate %}{{ stats.success_rate }}%{% else %}0%{% endif %}</h3>
+                        </div>
+                        <div class="text-green-500 bg-green-200 p-2 rounded-full">
+                            <i class="fas fa-check-circle text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-4">Mijozlarimiz <span class="text-primary-600">fikrlari</span></h2>
+                <p class="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">TsPay foydalanuvchilari tajribalari haqida</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for testimonial in testimonials %}
+                <div class="testimonial-card">
+                    <div class="flex items-center mb-4">
+                        <img src="{{ testimonial.avatar }}" class="w-12 h-12 rounded-full mr-4" alt="{{ testimonial.name }}">
+                        <div>
+                            <h4 class="font-bold text-gray-800">{{ testimonial.name }}</h4>
+                            <p class="text-gray-500 text-sm">{{ testimonial.position }}</p>
+                        </div>
+                    </div>
+                    <div class="flex mb-2">
+                        {% for i in "12345" %}
+                            <i class="fas fa-star text-yellow-400 mr-1"></i>
+                        {% endfor %}
+                    </div>
+                    <p class="text-gray-600 italic">"{{ testimonial.comment }}"</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-4">Qanday <span class="text-primary-600">ishlaydi</span>?</h2>
+                <p class="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">TsPay bilan to'lov qilish jarayoni 3 oddiy qadamdan iborat</p>
+            </div>
+
+            <div class="flex flex-col lg:flex-row items-center">
+                <!-- Steps -->
+                <div class="lg:w-1/2 mb-12 lg:mb-0">
+                    <!-- Step 1 -->
+                    <div class="flex mb-10 group">
+                        <div class="flex-shrink-0 mr-6">
+                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 text-2xl font-bold group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                1
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Hisob yarating</h3>
+                            <p class="text-gray-600">Bir daqiqadan kamroq vaqt ichida ro'yxatdan o'ting va hisobingizni faollashtiring.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="flex mb-10 group">
+                        <div class="flex-shrink-0 mr-6">
+                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-600 text-2xl font-bold group-hover:bg-purple-600 group-hover:text-white transition-all">
+                                2
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Kartangizni ulang</h3>
+                            <p class="text-gray-600">Uzcard, Humo yoki boshqa xalqaro kartalaringizni hisobingizga ulang.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="flex group">
+                        <div class="flex-shrink-0 mr-6">
+                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 text-2xl font-bold group-hover:bg-green-600 group-hover:text-white transition-all">
+                                3
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">To'lov qiling</h3>
+                            <p class="text-gray-600">Har qanday to'lovlaringizni bir necha soniyada amalga oshiring.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image -->
+                <div class="lg:w-1/2">
+                    <div class="relative">
+                        <div class="absolute -top-6 -left-6 w-full h-full bg-blue-100 rounded-2xl -z-10"></div>
+                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
+                             alt="How TsPay works"
+                             class="rounded-2xl shadow-xl w-full h-auto object-cover">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-to-r from-primary-600 to-primary-500 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl sm:text-4xl font-bold mb-6">Hoziroq boshlang</h2>
+            <p class="text-xl max-w-2xl mx-auto mb-8">TsPay bilan to'lovlaringizni qulay va xavfsiz qiling.</p>
+            <a href="{% url 'register' %}" class="btn-primary inline-block">Ro'yxatdan o'tish</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white pt-16 pb-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                <!-- Company Info -->
+                <div>
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">T</div>
+                        <span class="text-2xl font-bold text-white">TsPay</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">Eng qulay va xavfsiz to'lov tizimi</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-telegram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Company -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">Kompaniya</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Biz haqimizda</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Yangiliklar</a></li>
+                    </ul>
+                </div>
+
+                <!-- Resources -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">Resurslar</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Qo'llanma</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Ko'p beriladigan savollar</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">Aloqa</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-3 text-gray-400"></i>
+                            <span class="text-gray-400">+998 99 999 99 99</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-3 text-gray-400"></i>
+                            <span class="text-gray-400">info@tspay.uz</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 mb-4 md:mb-0">© 2025 TsPay. Barcha huquqlar himoyalangan.</p>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">Foydalanish shartlari</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const menuBtn = document.getElementById('mobileMenuButton');
+        const closeBtn = document.getElementById('closeMobileMenu');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.remove('hidden');
+            setTimeout(() => {
+                mobileMenu.classList.remove('opacity-0', 'translate-y-full');
+                mobileMenu.classList.add('opacity-100', 'translate-y-0');
+            }, 10);
+        });
+
+        closeBtn.addEventListener('click', () => {
+            mobileMenu.classList.remove('opacity-100', 'translate-y-0');
+            mobileMenu.classList.add('opacity-0', 'translate-y-full');
+            setTimeout(() => mobileMenu.classList.add('hidden'), 300);
+        });
+    </script>
+</body>
+</html>

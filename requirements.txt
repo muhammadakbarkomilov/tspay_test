@@ -1,0 +1,10 @@
+django~=4.2.23
+django-ckeditor~=6.7.3
+channels~=4.2.2
+drf-yasg~=1.21.10
+djangorestframework-simplejwt~=5.5.0
+python-dotenv~=1.1.1
+aiogram~=3.21.0
+asgiref~=3.9.1
+requests~=2.32.4
+djangorestframework~=3.16.0

@@ -1,0 +1,240 @@
+{% extends 'my/base.html' %}
+
+{% block title %}Tranzaksiyalar{% endblock %}
+{% block header_title %}Tranzaksiyalar{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Sarlavha va filtrlar -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Tranzaksiyalar tarixi</h1>
+            <p class="text-gray-500 mt-1">Barcha amalga oshirilgan operatsiyalar ro'yxati</p>
+        </div>
+
+        <!-- Filtr formasi -->
+        <form method="get" class="w-full md:w-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <!-- Do'kon filtr -->
+            <div>
+                <label for="shop-filter" class="block text-sm font-medium text-gray-700 mb-1">Do'kon</label>
+                <select id="shop-filter" name="shop" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
+                    <option value="">Barchasi</option>
+                    {% for shop in shops %}
+                    <option value="{{ shop.id }}" {% if shop.id|stringformat:"s" == selected_shop|stringformat:"s" %}selected{% endif %}>{{ shop.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Status filtr -->
+            <div>
+                <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">Holati</label>
+                <select id="status-filter" name="status" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
+                    <option value="">Barchasi</option>
+                    <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Kutilmoqda</option>
+                    <option value="success" {% if selected_status == 'success' %}selected{% endif %}>Muvaffaqiyatli</option>
+                    <option value="failed" {% if selected_status == 'failed' %}selected{% endif %}>Bekor qilingan</option>
+                </select>
+            </div>
+
+            <!-- Sana filtr -->
+            <div>
+                <label for="start-date" class="block text-sm font-medium text-gray-700 mb-1">Boshlanish</label>
+                <input type="date" id="start-date" name="start_date" value="{{ start_date }}"
+                       class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
+            </div>
+
+            <div>
+                <label for="end-date" class="block text-sm font-medium text-gray-700 mb-1">Tugash</label>
+                <input type="date" id="end-date" name="end_date" value="{{ end_date }}"
+                       class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border">
+            </div>
+
+            <!-- Filtrlash tugmasi -->
+            <div class="sm:col-span-2 md:col-span-4 flex items-end">
+                <button type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition duration-150 ease-in-out flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+                    </svg>
+                    Filtrlash
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tranzaksiyalar jadvali -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <!-- Jadval sarlavhasi -->
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+            <h3 class="text-lg font-medium text-gray-800">Tranzaksiyalar ro'yxati</h3>
+            <p class="text-sm text-gray-500">{{ transactions|length }} ta natija</p>
+        </div>
+
+        <!-- Jadval kontenti -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Do'kon</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Miqdori</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Holati</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sana</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Harakatlar</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for tx in transactions %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-150">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ tx.shop.title }}</div>
+                                    <div class="text-sm text-gray-500">ID: {{ tx.cheque_id|truncatechars:8 }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                            {{ tx.amount|floatformat:"0" }} UZS
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                                {% if tx.status == 'success' %}bg-green-100 text-green-800
+                                {% elif tx.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ tx.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500">
+                            {{ tx.created_at|date:"d.m.Y H:i" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <a href="{% url 'checkout_detail' tx.cheque_id %}" class="text-blue-600 hover:text-blue-900 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                            <div class="flex flex-col items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <p class="text-lg font-medium text-gray-600">Tranzaksiyalar topilmadi</p>
+                                <p class="text-sm mt-1">Filtr parametrlarini o'zgartirib ko'ring</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if transactions.has_other_pages %}
+        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
+            <div class="flex-1 flex justify-between sm:hidden">
+                {% if transactions.has_previous %}
+                <a href="?page={{ transactions.previous_page_number }}{% if selected_shop %}&shop={{ selected_shop }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                   class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Oldingi
+                </a>
+                {% endif %}
+                {% if transactions.has_next %}
+                <a href="?page={{ transactions.next_page_number }}{% if selected_shop %}&shop={{ selected_shop }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                   class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Keyingi
+                </a>
+                {% endif %}
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        <span class="font-medium">{{ transactions.start_index }}</span> dan
+                        <span class="font-medium">{{ transactions.end_index }}</span> gacha
+                        <span class="font-medium">{{ transactions.paginator.count }}</span> ta natijadan
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        {% if transactions.has_previous %}
+                        <a href="?page={{ transactions.previous_page_number }}{% if selected_shop %}&shop={{ selected_shop }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                           class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Oldingi</span>
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                        {% endif %}
+
+                        {% for i in transactions.paginator.page_range %}
+                            {% if transactions.number == i %}
+                            <a href="#" aria-current="page"
+                               class="z-10 bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                {{ i }}
+                            </a>
+                            {% else %}
+                            <a href="?page={{ i }}{% if selected_shop %}&shop={{ selected_shop }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                               class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                {{ i }}
+                            </a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if transactions.has_next %}
+                        <a href="?page={{ transactions.next_page_number }}{% if selected_shop %}&shop={{ selected_shop }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                           class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Keyingi</span>
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tranzaksiya qatorlariga hover effekti
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Agar a tegi bosilgan bo'lsa, unda harakatni to'xtatmaymiz
+            if (e.target.tagName === 'A' || e.target.closest('a')) return;
+
+            const link = row.querySelector('td:last-child a');
+            if (link) {
+                window.location.href = link.href;
+            }
+        });
+    });
+
+    // Filtr parametrlarini saqlash
+    const filterForm = document.querySelector('form[method="get"]');
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+            // Agar sahifa parametri bor bo'lsa, uni olib tashlaymiz
+            const pageInput = document.querySelector('input[name="page"]');
+            if (pageInput) {
+                pageInput.remove();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

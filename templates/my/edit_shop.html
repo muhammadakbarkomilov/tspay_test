@@ -1,0 +1,67 @@
+{% extends 'my/base.html' %}
+
+{% block title %}{{ shop.title }} - Tahrirlash{% endblock %}
+
+{% block header_title %}{{ shop.title }} - Tahrirlash{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white rounded-xl shadow p-8 mt-10 space-y-6">
+  <form method="post" enctype="multipart/form-data" class="space-y-6">
+    {% csrf_token %}
+
+    <!-- Do'kon nomi -->
+    <div>
+      <label for="id_title" class="block text-sm font-medium text-gray-700">Do'kon nomi</label>
+      <input type="text" name="title" id="id_title" value="{{ form.title.value|default_if_none:'' }}"
+        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+      {% if form.title.errors %}
+      <p class="text-red-500 text-sm mt-1">{{ form.title.errors|join:", " }}</p>
+      {% endif %}
+    </div>
+
+    <!-- Tavsif -->
+    <div>
+      <label for="id_description" class="block text-sm font-medium text-gray-700">Tavsif</label>
+      <textarea name="description" id="id_description" rows="4"
+        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ form.description.value|default_if_none:'' }}</textarea>
+      {% if form.description.errors %}
+      <p class="text-red-500 text-sm mt-1">{{ form.description.errors|join:", " }}</p>
+      {% endif %}
+    </div>
+
+    <!-- Hozirgi rasm -->
+    {% if form.instance.image %}
+    <div>
+      <p class="text-sm text-gray-700 mb-1">Hozirgi rasm:</p>
+      <img src="{{ form.instance.image.url }}" alt="Do'kon rasmi" class="h-28 rounded-lg border">
+    </div>
+    {% endif %}
+
+    <!-- Yangi rasm yuklash -->
+    <div>
+      <label for="id_image" class="block text-sm font-medium text-gray-700">Rasmni o‘zgartirish (ixtiyoriy)</label>
+      <input type="file" name="image" id="id_image"
+        class="mt-1 block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
+               file:rounded-full file:border-0
+               file:text-sm file:font-semibold
+               file:bg-blue-50 file:text-blue-700
+               hover:file:bg-blue-100 transition duration-150">
+      {% if form.image.errors %}
+      <p class="text-red-500 text-sm mt-1">{{ form.image.errors|join:", " }}</p>
+      {% endif %}
+    </div>
+
+    <!-- Tugmalar -->
+    <div class="flex justify-between pt-4 border-t border-gray-200">
+      <a href="{% url 'shops' %}"
+        class="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+        Bekor qilish
+      </a>
+      <button type="submit"
+        class="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition">
+        Yangilash
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
